@@ -12,9 +12,26 @@ const shiftCodes: any = {
     186: ':', 
 }
 
-export default function UseKeyPress({ historySize }: UseKeyPressProps): Array<number> {
+export default function UseKeyPress({ historySize }: UseKeyPressProps): [Array<string>, Array<number>] {
     const [keysDown, setKeysDown] = useState<Array<number>>([]);
     const [readableKeys, setReadableKeys] = useState<Array<string>>([]);
+
+    function updateReadableKeys(key: string) {
+        setReadableKeys((prevReadableKeys) => {
+            while(prevReadableKeys.length-1 > historySize) {
+                prevReadableKeys.shift();
+            }
+            return [...prevReadableKeys, key];
+        });
+    }
+
+    function updateKeysDown(code: number) {
+        setKeysDown((prevKeysDown) => {
+            const idx = prevKeysDown.indexOf(code);
+            if (idx !== -1) prevKeysDown.splice(idx, 1);
+            return prevKeysDown;
+        });
+    }
 
     function handleKeyDown(e: any) {
         if (keysDown.indexOf(e.keyCode) === -1) {
@@ -22,25 +39,24 @@ export default function UseKeyPress({ historySize }: UseKeyPressProps): Array<nu
         }
         // Shift modifier = 17
         if (keysDown.indexOf(17) !== -1) {
+            updateReadableKeys(shiftCodes[e.keyCode]);
+        } else {
+            updateReadableKeys(codes[e.keyCode]);
         } 
     }
 
     function handleKeyUp(e: any) {
-        const index = keysDown.indexOf(e.keyCode);
-        const copy = [...keysDown];
-        copy.splice(index, 1);
-        setKeysDown(copy);
+        updateKeysDown(e.keyCode);
     }
     
     useEffect(() => {
-        console.log(keysDown);
         document.addEventListener('keydown', handleKeyDown);
         document.addEventListener('keyup', handleKeyUp)
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('keyup', handleKeyUp);
         }
-    }, [keysDown]);
+    }, []);
 
-    return keysDown;
+    return [readableKeys, keysDown];
 }
