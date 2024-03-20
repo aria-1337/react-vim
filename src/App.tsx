@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Line from './components/Line';
+import UseKeyPress from './hooks/UseKeypress';
 
 export default function App() {
     // Editor Logic
@@ -8,21 +9,7 @@ export default function App() {
     const [keypresses, setKeypresses] = useState<Array<number>>([]);
     const [selectedRow, setSelectedRow] = useState<number>(0);
     const [cursorPos, setCursorPos] = useState<number>(0);
-
-    useEffect(() => {
-        // MOUNT
-        document.addEventListener('keydown', (e) => {
-            setKeypresses([...keypresses, e.keyCode]);
-        });
-        // UNMOUNT
-        return () => {
-            document.removeEventListener('keydown', () => {});
-        }
-    }, []);
-
-    useEffect(() => {
-        console.log(keypresses);
-    }, [keypresses]);
+    const kps = UseKeyPress({ historySize: 100 });
 
     // @addLine()
     // This function created a new line is initially appended to the last Line instance.
