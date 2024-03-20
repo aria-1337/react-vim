@@ -9,7 +9,8 @@ export default function App() {
     const [keypresses, setKeypresses] = useState<Array<number>>([]);
     const [selectedRow, setSelectedRow] = useState<number>(0);
     const [cursorPos, setCursorPos] = useState<number>(0);
-    const kps = UseKeyPress({ historySize: 100 });
+
+    const [keysDown] = UseKeyPress({ historySize: 1000 });
 
     // @addLine()
     // This function created a new line is initially appended to the last Line instance.
@@ -20,6 +21,7 @@ export default function App() {
 
     return (<>
     <h1>Vim</h1>
+    <>{ keysDown }</>
     <EditorWrapper>
         { rows?.map((r, key) => <Line key={key} n={r.n} text={r.text} />) }
         <Line key={'end'} n={0} text={''} />
