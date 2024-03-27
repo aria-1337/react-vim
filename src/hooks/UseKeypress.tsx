@@ -14,6 +14,7 @@ export default function UseKeyPress() : KeyPress {
     const [state, setState] = useState<KeyPress>({ code: -1, char: 'start', event: 'start' });
 
     function handleKeyDown(e: any) {
+        e.preventDefault();
         setState((_) => {
             return { 
                 code: e.keyCode, 
@@ -24,6 +25,7 @@ export default function UseKeyPress() : KeyPress {
     }
 
     function handleKeyUp(e: any) {
+        e.preventDefault();
         setState((_) => {
             return {
                 code: e.keyCode,

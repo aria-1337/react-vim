@@ -86,18 +86,18 @@ export default function App() {
                 if (_mode === 'normal') {
                     // create a new row: enter => insert new row directly below selected row
                     if (lastAction.char === 'o' || lastAction.char === 'enter') {
-                        setRows((oldRows) => {
-                            const newRows = oldRows;
-                            newRows.splice(selectedRow+1, 0, { text: ''})
-                            setSelectedRow((old) => old+1);
-                            return newRows;
-                        });
+                        newRow();
                         return 'insert';
                     }
                 }
 
                 // INSERT MODE
                 if (_mode === 'insert') {
+                    // Enter key opens a new row
+                    if (lastAction.char === 'enter') {
+                        newRow();
+                        return _mode;
+                    }
                     // write to row
                     setRows((oldRows) => {
                         const newRows = [...oldRows];
@@ -114,6 +114,15 @@ export default function App() {
             return _mode;
         });
     }, [mem]);
+
+    function newRow() {
+        setRows((oldRows) => {
+            const newRows = oldRows;
+            newRows.splice(selectedRow+1, 0, { text: ''})
+            setSelectedRow((old) => old+1);
+            return newRows;
+        });
+    }
 
     return (<>
     <h1>Vim</h1>
