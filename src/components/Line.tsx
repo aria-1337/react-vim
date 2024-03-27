@@ -23,10 +23,21 @@ export default function Line({ n, text, selected } : LineProps) {
     </LineContainer>);
 }
 
+const LineText = styled.input`
+    margin: 1px;
+    border: none;
+    font-family: inherit;
+    font-weight: inherit;
+    font-size: 14px;
+`;
+
 const LineContainer = styled.div<{ selected: string }>`
-    background-color: ${props => props.selected === 'true' ? 'gray' : 'transparent' };
+    background-color: ${props => props.selected === 'true' ? 'whitesmoke' : 'transparent' };
     display: flex;
     flex-direction: row;
+    ${LineText} {
+        background-color: ${props => props.selected === 'true' ? 'whitesmoke' : 'transparent' };
+    }
 `;
 
 const LineNumber = styled.p`
@@ -35,10 +46,3 @@ const LineNumber = styled.p`
     font-weight: bold;
 `;
 
-const LineText = styled.input`
-    margin: 1px;
-    border: none;
-    font-family: inherit;
-    font-weight: inherit;
-    font-size: 14px;
-`;

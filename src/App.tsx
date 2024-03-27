@@ -126,7 +126,7 @@ export default function App() {
     <p>{ `mods: ${modifier}`}</p>
     <p>{ `code: ${code} ___ char: ${char} ___ event: ${event}` }</p>
     <p>{ `rows: ${rows.map((r, key) => `____ ${key+1}: ${r.text} ____`)}`}</p>
-    <p>{ `mem: ${mem.map(({ code, char, event}) => `${code} | ${char} | ${event} \n`)}`} </p>
+    <Col>{ mem.reverse().map(({ code, char, event}, i) => i > 10 ? null : <p>{`code: ${code} char: ${char} event: ${event}`}</p>)}</Col>
     </>);
 }
 
@@ -136,4 +136,10 @@ const EditorWrapper = styled.div`
     border: 1px solid black;
     padding: 5px;
     max-width: 500px;
+`;
+
+// THIS IS JUST FOR TEST
+const Col = styled.div`
+    display: flex;
+    flex-direction: column;
 `;
