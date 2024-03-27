@@ -9,8 +9,27 @@ export default function App() {
     const [keypresses, setKeypresses] = useState<Array<number>>([]);
     const [selectedRow, setSelectedRow] = useState<number>(0);
     const [cursorPos, setCursorPos] = useState<number>(0);
+    const [mode, setMode] = useState<string>('normal');
 
-    const [keys, keysDown] = UseKeyPress({ historySize: 10 });
+    // Track keypresses and store them to memory
+    const [mem, setMem] = useState<Array<{ code: number, char: string, event: string }>>([]);
+    const { code, char, event }  = UseKeyPress();
+    useEffect(() => {
+        setMem((oldMem) => {
+            // TODO: LIMIT (In App props)
+            return [...oldMem, { code, char, event}]
+        });
+
+        // ESC Modifier => Return to normal mode 
+        if (char === 'Esc' && event === 'down') {
+            setMode('normal');
+        }
+
+        // While in normal + I => Insert mode
+        if (mode === 'normal' && char === 'I' && event === 'down') {
+            setMode('insert');
+        } 
+    }, [code, char, event, mode]);
 
     // @addLine()
     // This function created a new line is initially appended to the last Line instance.
@@ -21,8 +40,9 @@ export default function App() {
 
     return (<>
     <h1>Vim</h1>
-    <div>Keys: { keys.toString() }</div>
-    <div>Keys down: { keysDown.toString() }</div>
+    <p>{ `code: ${code} ___ char: ${char} ___ event: ${event}` }</p>
+    <p>{ `mode: ${mode}` }</p>
+    <p>{ `mem: ${mem.map(({ code, char, event}) => `${code} | ${char} | ${event}`)}`}</p>
     <EditorWrapper>
         { rows?.map((r, key) => <Line key={key} n={r.n} text={r.text} />) }
         <Line key={'end'} n={0} text={''} />
