@@ -10,7 +10,7 @@ export default function App() {
     const [active, setActive] = useState(true);
 
     // Editor Logic
-    const [rows, setRows] = useState([{ n: 1, text: '' }]);
+    const [rows, setRows] = useState([{ text: '' }]);
     const [keypresses, setKeypresses] = useState<Array<number>>([]);
     const [selectedRow, setSelectedRow] = useState<number>(0);
     const [cursorPos, setCursorPos] = useState<number>(0);
@@ -51,13 +51,29 @@ export default function App() {
     useEffect(() => {
         if (mem.length < 1) return;
         const lastAction = mem[mem.length-1];
+        // BUG: This only triggers once as expected
+        // console.log(lastAction);
 
         // get newest mode
         setMode((lastMode) => {
+            // BUG: THIS IS TRIGGERING TWICE
+            console.log(lastAction);
             let _mode = lastMode;
 
             // With newest mode handle keydown
             if (lastAction.event === 'down') {
+                // In any mode arrow keys move
+                if (lastAction.char === 'down') {
+                    setSelectedRow((old) => {
+                        if (rows?.[old+1]) { return old+1;}
+                        return old;
+                    });
+                } else if (lastAction.char === 'up') {
+                    setSelectedRow((old) => {
+                        if(rows?.[old-1]) { return old-1; }
+                        return old;
+                    });
+                }
                 // handle mode changes
                 if (lastMode !== 'normal' && lastAction.char === 'esc') {
                     return 'normal';
@@ -66,12 +82,26 @@ export default function App() {
                 } else if (lastMode === 'normal' && lastAction.char === 'v') {
                     return 'visual';
                 }
+                // NORMAL MODE
+                if (_mode === 'normal') {
+                    // create a new row: enter => insert new row directly below selected row
+                    if (lastAction.char === 'o' || lastAction.char === 'enter') {
+                        setRows((oldRows) => {
+                            const newRows = oldRows;
+                            newRows.splice(selectedRow+1, 0, { text: ''})
+                            setSelectedRow((old) => old+1);
+                            return newRows;
+                        });
+                        return 'insert';
+                    }
+                }
+
                 // INSERT MODE
                 if (_mode === 'insert') {
+                    // write to row
                     setRows((oldRows) => {
                         const newRows = [...oldRows];
                         newRows[selectedRow] = {
-                            n: newRows[selectedRow].n,
                             text: getLegalText(newRows[selectedRow].text, lastAction.char),
                         };
                         return newRows;
@@ -89,12 +119,13 @@ export default function App() {
     <h1>Vim</h1>
     <p>{ `mode: ${mode}` }</p>
     <EditorWrapper>
-        { rows?.map((r, key) => <Line key={key} n={r.n} text={r.text} />) }
-        <Line key={'end'} n={0} text={''} />
+        { rows?.map((r, key) => <Line key={key} n={key+1} text={r.text} selected={selectedRow} />) }
+        <Line key={'end'} n={0} text={''} selected={selectedRow} />
     </EditorWrapper>
+    <p>{ `selected: ${selectedRow}`}</p>
     <p>{ `mods: ${modifier}`}</p>
     <p>{ `code: ${code} ___ char: ${char} ___ event: ${event}` }</p>
-    <p>{ `rows: ${rows.map(r => `____ ${r.n}: ${r.text} ____`)}`}</p>
+    <p>{ `rows: ${rows.map((r, key) => `____ ${key+1}: ${r.text} ____`)}`}</p>
     <p>{ `mem: ${mem.map(({ code, char, event}) => `${code} | ${char} | ${event} \n`)}`} </p>
     </>);
 }
