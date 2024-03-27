@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Line from './components/Line';
 import UseKeyPress from './hooks/UseKeypress';
+import getModifiedChar from './utils/getModifiedChar';
 
 export default function App() {
     // Editor Logic
@@ -13,26 +14,34 @@ export default function App() {
 
     // Track keypresses and store them to memory
     const [mem, setMem] = useState<Array<{ code: number, char: string, event: string }>>([]);
+    const [modifier, setModifier] = useState<Array<string>>([]);
     const { code, char, event }  = UseKeyPress();
     useEffect(() => {
-        setMem((oldMem) => {
-            const newMem = [...oldMem, { code, char, event }];
-            while (newMem.length > 100) {
-                newMem.shift();
+        setModifier((oldMod) => {
+            // Remove/update modifier
+            const idx = oldMod.indexOf(char);
+            if (event === 'up' && idx !== -1) {
+                oldMod.splice(idx, 1);
+            } else if (event === 'down') {
+                oldMod = [...oldMod, char];
             }
-            return newMem;
+
+            // Add to memory based on current modifiers
+            setMem((oldMem) => {
+                // TODO: this should be a prop
+                while (oldMem.length > 100) { oldMem.shift(); }
+
+                if (oldMod.length > 0) {
+                    oldMem = [...oldMem, { code, char: getModifiedChar(char, oldMod), event }];
+                } else {
+                    oldMem = [...oldMem, { code, char, event }];
+                }
+                return oldMem;
+            });
+            return oldMod;
         });
+    }, [code, char, event]);
 
-        // ESC Modifier => Return to normal mode 
-        if (char === 'Esc' && event === 'down') {
-            setMode('normal');
-        }
-
-        // While in normal + I => Insert mode
-        if (mode === 'normal' && char === 'I' && event === 'down') {
-            setMode('insert');
-        } 
-    }, [code, char, event, mode]);
 
     // @addLine()
     // This function created a new line is initially appended to the last Line instance.
@@ -45,7 +54,8 @@ export default function App() {
     <h1>Vim</h1>
     <p>{ `code: ${code} ___ char: ${char} ___ event: ${event}` }</p>
     <p>{ `mode: ${mode}` }</p>
-    <p>{ `mem: ${mem.map(({ code, char, event}) => `${code} | ${char} | ${event}`)}`}</p>
+    <p>{ `mods: ${modifier}`}</p>
+    <p>{ `mem: ${mem.map(({ code, char, event}) => `${code} | ${char} | ${event} \n`)}`} </p>
     <EditorWrapper>
         { rows?.map((r, key) => <Line key={key} n={r.n} text={r.text} />) }
         <Line key={'end'} n={0} text={''} />

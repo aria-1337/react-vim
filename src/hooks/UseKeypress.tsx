@@ -17,7 +17,7 @@ export default function UseKeyPress() : KeyPress {
         setState((_) => {
             return { 
                 code: e.keyCode, 
-                char: (codes?.[e.keyCode] ? codes[e.keyCode] : 'null'), 
+                char: (codes?.[e.keyCode] ? codes[e.keyCode] : 'null').toLowerCase(), 
                 event: 'down' 
             };  
         });
@@ -27,7 +27,7 @@ export default function UseKeyPress() : KeyPress {
         setState((_) => {
             return {
                 code: e.keyCode,
-                char: (codes?.[e.keyCode] ? codes[e.keyCode] : 'null'), 
+                char: (codes?.[e.keyCode] ? codes[e.keyCode] : 'null').toLowerCase(), 
                 event: 'up' 
             };
         });
@@ -44,3 +44,4 @@ export default function UseKeyPress() : KeyPress {
 
     return state;
 }
+
