@@ -16,8 +16,11 @@ export default function App() {
     const { code, char, event }  = UseKeyPress();
     useEffect(() => {
         setMem((oldMem) => {
-            // TODO: LIMIT (In App props)
-            return [...oldMem, { code, char, event}]
+            const newMem = [...oldMem, { code, char, event }];
+            while (newMem.length > 100) {
+                newMem.shift();
+            }
+            return newMem;
         });
 
         // ESC Modifier => Return to normal mode 
