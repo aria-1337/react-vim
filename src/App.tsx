@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Line from './components/Line';
 import UseKeyPress from './hooks/UseKeypress';
 import getModifiedChar from './utils/getModifiedChar';
+import getLegalText from './utils/getLegalText';
 
 export default function App() {
     // TODO: Eventaully we want to enable on click within component and disable on click out
@@ -69,7 +70,7 @@ export default function App() {
                         const newRows = [...oldRows];
                         newRows[selectedRow] = {
                             n: newRows[selectedRow].n,
-                            text: newRows[selectedRow].text + lastAction.char,
+                            text: newRows[selectedRow].text + getLegalText(lastAction.char),
                         };
                         return newRows;
                     });
