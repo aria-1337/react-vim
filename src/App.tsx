@@ -51,16 +51,35 @@ export default function App() {
         if (mem.length < 1) return;
         const lastAction = mem[mem.length-1];
 
-        if (lastAction.event === 'down') {
-            setRows((oldRows) => {
-                const newRows = [...oldRows];
-                newRows[selectedRow] = {
-                    n: newRows[selectedRow].n,
-                    text: newRows[selectedRow].text + lastAction.char,
-                };
-                return newRows;
-            });
-        }
+        // get newest mode
+        setMode((lastMode) => {
+            let _mode = lastMode;
+            if (lastMode !== 'normal' && lastAction.char === 'esc') {
+                return 'normal';
+            } else if (lastMode === 'normal' && lastAction.char === 'i') {
+                return 'insert';
+            } else if (lastMode === 'normal' && lastAction.char === 'v') {
+                return 'visual';
+            }
+
+            // With newest mode handle keydown
+            if (lastAction.event === 'down') {
+                if (_mode === 'insert') {
+                    setRows((oldRows) => {
+                        const newRows = [...oldRows];
+                        newRows[selectedRow] = {
+                            n: newRows[selectedRow].n,
+                            text: newRows[selectedRow].text + lastAction.char,
+                        };
+                        return newRows;
+                    });
+                }
+            }
+            // Or keyup 
+            else if (lastAction.event === 'up') {
+            }
+            return _mode;
+        });
     }, [mem]);
 
     return (<>
