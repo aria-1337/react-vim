@@ -5,8 +5,11 @@ import UseKeyPress from './hooks/UseKeypress';
 import getModifiedChar from './utils/getModifiedChar';
 
 export default function App() {
+    // TODO: Eventaully we want to enable on click within component and disable on click out
+    const [active, setActive] = useState(true);
+
     // Editor Logic
-    const [rows, setRows] = useState([{ n: 1, text: 'some default text' }]);
+    const [rows, setRows] = useState([{ n: 1, text: '' }]);
     const [keypresses, setKeypresses] = useState<Array<number>>([]);
     const [selectedRow, setSelectedRow] = useState<number>(0);
     const [cursorPos, setCursorPos] = useState<number>(0);
@@ -28,6 +31,7 @@ export default function App() {
 
             // Add to memory based on current modifiers
             setMem((oldMem) => {
+                if (code === -1) return oldMem;
                 // TODO: this should be a prop
                 while (oldMem.length > 100) { oldMem.shift(); }
 
@@ -42,19 +46,29 @@ export default function App() {
         });
     }, [code, char, event]);
 
+    // On memory update create editor actions
+    useEffect(() => {
+        if (mem.length < 1) return;
+        const lastAction = mem[mem.length-1];
 
-    // @addLine()
-    // This function created a new line is initially appended to the last Line instance.
-    // It should be called during the following scenarios:
-    // [] Enter press on keyboard -> Enters line @ n+1
-    function addLine() {
-    }
+        if (lastAction.event === 'down') {
+            setRows((oldRows) => {
+                const newRows = [...oldRows];
+                newRows[selectedRow] = {
+                    n: newRows[selectedRow].n,
+                    text: newRows[selectedRow].text + lastAction.char,
+                };
+                return newRows;
+            });
+        }
+    }, [mem]);
 
     return (<>
     <h1>Vim</h1>
     <p>{ `code: ${code} ___ char: ${char} ___ event: ${event}` }</p>
     <p>{ `mode: ${mode}` }</p>
     <p>{ `mods: ${modifier}`}</p>
+    <p>{ `rows: ${rows.map(r => `____ ${r.n}: ${r.text} ____`)}`}</p>
     <p>{ `mem: ${mem.map(({ code, char, event}) => `${code} | ${char} | ${event} \n`)}`} </p>
     <EditorWrapper>
         { rows?.map((r, key) => <Line key={key} n={r.n} text={r.text} />) }
@@ -68,4 +82,5 @@ const EditorWrapper = styled.div`
     flex-direction: column;
     border: 1px solid black;
     padding: 5px;
+    max-width: 500px;
 `;

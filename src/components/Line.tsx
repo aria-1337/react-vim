@@ -12,6 +12,10 @@ export default function Line({ n, text } : LineProps) {
         setV(e?.target?.value);
     }
 
+    useEffect(() => {
+        setV((oldV) => text);
+    }, [text]);
+
     return (<LineContainer>
         <LineNumber>{ n === 0 ? '~' : n }</LineNumber>
         <LineText value={v} onChange={(e) => handleTyping(e)}/>
