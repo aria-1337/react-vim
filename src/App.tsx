@@ -55,22 +55,24 @@ export default function App() {
         // get newest mode
         setMode((lastMode) => {
             let _mode = lastMode;
-            if (lastMode !== 'normal' && lastAction.char === 'esc') {
-                return 'normal';
-            } else if (lastMode === 'normal' && lastAction.char === 'i') {
-                return 'insert';
-            } else if (lastMode === 'normal' && lastAction.char === 'v') {
-                return 'visual';
-            }
 
             // With newest mode handle keydown
             if (lastAction.event === 'down') {
+                // handle mode changes
+                if (lastMode !== 'normal' && lastAction.char === 'esc') {
+                    return 'normal';
+                } else if (lastMode === 'normal' && lastAction.char === 'i') {
+                    return 'insert';
+                } else if (lastMode === 'normal' && lastAction.char === 'v') {
+                    return 'visual';
+                }
+                // INSERT MODE
                 if (_mode === 'insert') {
                     setRows((oldRows) => {
                         const newRows = [...oldRows];
                         newRows[selectedRow] = {
                             n: newRows[selectedRow].n,
-                            text: newRows[selectedRow].text + getLegalText(lastAction.char),
+                            text: getLegalText(newRows[selectedRow].text, lastAction.char),
                         };
                         return newRows;
                     });
@@ -85,15 +87,15 @@ export default function App() {
 
     return (<>
     <h1>Vim</h1>
-    <p>{ `code: ${code} ___ char: ${char} ___ event: ${event}` }</p>
     <p>{ `mode: ${mode}` }</p>
-    <p>{ `mods: ${modifier}`}</p>
-    <p>{ `rows: ${rows.map(r => `____ ${r.n}: ${r.text} ____`)}`}</p>
-    <p>{ `mem: ${mem.map(({ code, char, event}) => `${code} | ${char} | ${event} \n`)}`} </p>
     <EditorWrapper>
         { rows?.map((r, key) => <Line key={key} n={r.n} text={r.text} />) }
         <Line key={'end'} n={0} text={''} />
     </EditorWrapper>
+    <p>{ `mods: ${modifier}`}</p>
+    <p>{ `code: ${code} ___ char: ${char} ___ event: ${event}` }</p>
+    <p>{ `rows: ${rows.map(r => `____ ${r.n}: ${r.text} ____`)}`}</p>
+    <p>{ `mem: ${mem.map(({ code, char, event}) => `${code} | ${char} | ${event} \n`)}`} </p>
     </>);
 }
 
