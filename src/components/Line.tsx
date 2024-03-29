@@ -39,6 +39,7 @@ const TextContainer = styled.div`
 const TextCell = styled.div<{ selected: string }>`
     white-space: pre-wrap;
     background-color: ${props => props.selected === 'true' ? 'black' : 'transparent'};
+    min-width: 10px;
 `;
 
 const LineText = styled.div`

@@ -128,9 +128,17 @@ export default function App() {
     function newRow() {
         setRows((oldRows) => {
             const newRows = oldRows;
-            newRows.splice(selectedRow+1, 0, { text: ' '})
+            // Indent of new row needs to match old rows first character that is not whitespace
+            let autoIndent = '';
+            let indent = false;
+            for (const char of oldRows[selectedRow].text) {
+                if (char === ' ') { autoIndent += char; }
+                else { indent = true; break; }
+            }
+            newRows.splice(selectedRow+1, 0, { text: indent ? autoIndent : ' ' })
             setSelectedRow((old) => old+1);
             return newRows;
+
         });
     }
 
