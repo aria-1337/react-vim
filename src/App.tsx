@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Line from './components/Line';
+import Powerline from './components/Powerline';
 import UseKeyPress from './hooks/UseKeypress';
 import getModifiedChar from './utils/getModifiedChar';
 import getLegalText from './utils/getLegalText';
@@ -16,6 +17,7 @@ export default function App() {
     // Editor Logic
     const [rows, setRows] = useState<Array<Row>>([{ text: ' ' }]);
     const [selectedRow, setSelectedRow] = useState<number>(0);
+    // TODO: cursorPos is displayed as n+1 of true pos in insert mode and n in normal
     const [cursorPos, setCursorPos] = useState<number>(0);
     const [cachedCursorPos, setCachedCursorPos] = useState<number>(0);
     const [mode, setMode] = useState<string>('normal');
@@ -61,7 +63,6 @@ export default function App() {
         // get newest mode
         setMode((lastMode) => {
             // BUG: THIS IS TRIGGERING TWICE
-            console.log(lastAction);
             let _mode = lastMode;
 
             // With newest mode handle keydown
@@ -114,6 +115,12 @@ export default function App() {
                         newRows[selectedRow] = {
                             text: getLegalText(newRows[selectedRow].text, lastAction.char),
                         };
+
+                        // Handle deletion of a row
+                        if (newRows[selectedRow].text.length === 0) {
+                            const legal = removeRow(selectedRow);
+                            if (legal) { newRows.splice(selectedRow, 1); }
+                        }
                         return newRows;
                     });
                 }
@@ -142,6 +149,13 @@ export default function App() {
         });
     }
 
+    // @removeRow() -> true=legal false=illegal
+    function removeRow(rowIdx: number) : boolean {
+        if (rowIdx === 0) return false; // Cant remove first row
+        setSelectedRow(rowIdx-1);
+        return true;
+    }
+
     /* Cursor movement rules
      * right/left only possible if there is a textspace there
      * on up/down it keeps the same position if possible, if not it goes to the closest pos
@@ -166,11 +180,10 @@ export default function App() {
     }
 
     return (<>
-    <h1>Vim</h1>
-    <p>{ `mode: ${mode}` }</p>
     <EditorWrapper>
         { rows?.map((r, key) => <Line key={key} n={key+1} text={r.text} selected={selectedRow} cursorPos={cursorPos} setCursorPos={setCursorPos} />) }
         <Line key={'end'} n={0} text={''} selected={selectedRow} cursorPos={-1} setCursorPos={setCursorPos}/>
+        <Powerline mode={mode} text={''} selectedRow={selectedRow} cursorPos={cursorPos} />
     </EditorWrapper>
     <p>{ `cursorPos: ${cursorPos} `}</p>
     <p>{ `selected: ${selectedRow}`}</p>
