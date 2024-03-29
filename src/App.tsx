@@ -5,14 +5,19 @@ import UseKeyPress from './hooks/UseKeypress';
 import getModifiedChar from './utils/getModifiedChar';
 import getLegalText from './utils/getLegalText';
 
+interface Row {
+    text: string;
+}
+
 export default function App() {
     // TODO: Eventaully we want to enable on click within component and disable on click out
     const [active, setActive] = useState(true);
 
     // Editor Logic
-    const [rows, setRows] = useState([{ text: ' ' }]);
+    const [rows, setRows] = useState<Array<Row>>([{ text: ' ' }]);
     const [selectedRow, setSelectedRow] = useState<number>(0);
     const [cursorPos, setCursorPos] = useState<number>(0);
+    const [cachedCursorPos, setCachedCursorPos] = useState<number>(0);
     const [mode, setMode] = useState<string>('normal');
 
     // Track keypresses and store them to memory
@@ -72,6 +77,12 @@ export default function App() {
                         if(rows?.[old-1]) { return old-1; }
                         return old;
                     });
+                } else if (lastAction.char === 'right') {
+                    updateCursorPos('right', rows[selectedRow], cachedCursorPos);
+                    return _mode;
+                } else if (lastAction.char === 'left') {
+                    updateCursorPos('left', rows[selectedRow], cachedCursorPos);
+                    return _mode;
                 }
                 // handle mode changes
                 if (lastMode !== 'normal' && lastAction.char === 'esc') {
@@ -121,6 +132,29 @@ export default function App() {
             setSelectedRow((old) => old+1);
             return newRows;
         });
+    }
+
+    /* Cursor movement rules
+     * right/left only possible if there is a textspace there
+     * on up/down it keeps the same position if possible, if not it goes to the closest pos
+     * it also needs to keep relative position so we need to cache that. TODO: What actions clear this?
+     * TODO: on new line we should autoindent (this needs to be handled in @newRow() likely)
+     */
+    function updateCursorPos(type: string, row: Row, cachedPos: number) {
+        const { text } = row;
+        if (type === 'up' || type === 'down') {
+            if (text.length >= cachedPos) return;
+            setCursorPos(text.length-1);
+        } else if (type === 'right' || type === 'left') {
+            setCursorPos((oldPos) => {
+                const potNewPos = type === 'right' ? oldPos+1 : oldPos-1;
+                if (potNewPos >= 0 && potNewPos <= text.length-1) {
+                    setCachedCursorPos(potNewPos);
+                    return potNewPos;
+                }
+                return oldPos;
+            });
+        }
     }
 
     return (<>
