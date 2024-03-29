@@ -5,25 +5,44 @@ interface LineProps {
     n: number;
     text: string; 
     selected: number;
+    cursorPos: number;
+    setCursorPos: Function;
 }
 
-export default function Line({ n, text, selected } : LineProps) {
-    const [v, setV] = useState(text);
-    function handleTyping(e: React.ChangeEvent<HTMLInputElement>) {
-        setV(e?.target?.value);
-    }
+export default function Line({ n, text, selected, cursorPos, setCursorPos } : LineProps) {
+    const [t, setT] = useState<string>(text);
+    const [active, setActive] = useState<string>('false');
 
     useEffect(() => {
-        setV((oldV) => text);
-    }, [text]);
+        setT((oldText) => {
+            setActive((_) => {
+                const active = (n === selected+1);
+                return active.toString();
+            });
+            return text;
+        });
+    }, [text, selected, cursorPos]);
 
-    return (<LineContainer selected={(n === selected+1).toString()}>
+    return (<LineContainer selected={active}>
         <LineNumber>{ n === 0 ? '~' : n }</LineNumber>
-        <LineText value={v} onChange={(e) => handleTyping(e)}/>
+        <TextContainer>
+            { t.split('').map((i, x) => <TextCell selected={(x === cursorPos && active).toString()}>{ i }</TextCell>)}
+        </TextContainer>
     </LineContainer>);
 }
 
-const LineText = styled.input`
+const TextContainer = styled.div`
+    display: flex;
+    flex-direction: row;
+`;
+
+const TextCell = styled.div<{ selected: string }>`
+    white-space: pre-wrap;
+    background-color: ${props => props.selected === 'true' ? 'black' : 'transparent'};
+`;
+
+const LineText = styled.div`
+    flex-direction: row;
     margin: 1px;
     border: none;
     font-family: inherit;
@@ -46,3 +65,10 @@ const LineNumber = styled.p`
     font-weight: bold;
 `;
 
+const Cursor = styled.div`
+    min-width: 10px;
+    min-height: 10px;
+    color: white;
+    background-color: black;
+    text-align: center;
+`;

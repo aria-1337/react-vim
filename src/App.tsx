@@ -10,8 +10,7 @@ export default function App() {
     const [active, setActive] = useState(true);
 
     // Editor Logic
-    const [rows, setRows] = useState([{ text: '' }]);
-    const [keypresses, setKeypresses] = useState<Array<number>>([]);
+    const [rows, setRows] = useState([{ text: ' ' }]);
     const [selectedRow, setSelectedRow] = useState<number>(0);
     const [cursorPos, setCursorPos] = useState<number>(0);
     const [mode, setMode] = useState<string>('normal');
@@ -118,7 +117,7 @@ export default function App() {
     function newRow() {
         setRows((oldRows) => {
             const newRows = oldRows;
-            newRows.splice(selectedRow+1, 0, { text: ''})
+            newRows.splice(selectedRow+1, 0, { text: ' '})
             setSelectedRow((old) => old+1);
             return newRows;
         });
@@ -128,9 +127,10 @@ export default function App() {
     <h1>Vim</h1>
     <p>{ `mode: ${mode}` }</p>
     <EditorWrapper>
-        { rows?.map((r, key) => <Line key={key} n={key+1} text={r.text} selected={selectedRow} />) }
-        <Line key={'end'} n={0} text={''} selected={selectedRow} />
+        { rows?.map((r, key) => <Line key={key} n={key+1} text={r.text} selected={selectedRow} cursorPos={cursorPos} setCursorPos={setCursorPos} />) }
+        <Line key={'end'} n={0} text={''} selected={selectedRow} cursorPos={-1} setCursorPos={setCursorPos}/>
     </EditorWrapper>
+    <p>{ `cursorPos: ${cursorPos} `}</p>
     <p>{ `selected: ${selectedRow}`}</p>
     <p>{ `mods: ${modifier}`}</p>
     <p>{ `code: ${code} ___ char: ${char} ___ event: ${event}` }</p>
